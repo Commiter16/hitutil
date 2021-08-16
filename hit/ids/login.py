@@ -32,13 +32,13 @@ def idslogin(username: str, password: str, **kwargs) -> Session:
     else:
         s = Session()
     # get pwdDefaultEncryptSalt
-    r1 = s.get('http://ids.hit.edu.cn/authserver/login')
+    r1 = s.get('https://ids.hit.edu.cn/authserver/login')
     pwd_default_encrypt_salt = re.compile(
         'pwdDefaultEncryptSalt = "(.*)"').search(r1.text).groups()[0]
     passwordEncrypt = encrypt(
         rds(64).encode()+password.encode(), pwd_default_encrypt_salt.encode())
     # Detect Captcha
-    r2 = s.get('http://ids.hit.edu.cn/authserver/needCaptcha.html',
+    r2 = s.get('https://ids.hit.edu.cn/authserver/needCaptcha.html',
                params={
                    'username': username,
                    'pwdEncrypt2': 'pwdEncryptSalt'
@@ -47,7 +47,7 @@ def idslogin(username: str, password: str, **kwargs) -> Session:
         if 'captchaResponse' in kwargs:
             captchaResponse = kwargs['captchaResponse']
         else:
-            r = s.get('http://ids.hit.edu.cn/authserver/captcha.html', params={
+            r = s.get('https://ids.hit.edu.cn/authserver/captcha.html', params={
                 'ts': random.randint(0, 999)
             })
             raise CaptchaNeeded(s, r.content)
@@ -65,7 +65,7 @@ def idslogin(username: str, password: str, **kwargs) -> Session:
         "rmShown": soup.find('input', {'name': 'rmShown'})['value'],
         # "pwdDefaultEncryptSalt": pwd_default_encrypt_salt
     })
-    if r.url != 'http://ids.hit.edu.cn/authserver/index.do':
+    if r.url != 'https://ids.hit.edu.cn/authserver/index.do':
         raise LoginFailed()
 
     if kwargs.get('need_check_resp', False):
